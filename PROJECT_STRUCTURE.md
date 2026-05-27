@@ -5,12 +5,28 @@ Update it whenever files or folders are added, deleted, moved, or renamed.
 
 ```text
 minimal_todo_journal/
+  .flutter-plugins-dependencies
+  .gitignore
+  .metadata
   ARCHITECTURE.md
   PROJECT_STRUCTURE.md
   README.md
   analysis_options.yaml
+  minimal_todo_journal.iml
   pubspec.yaml
   pubspec.lock
+  assets/
+    fonts/
+      Lora-Bold.ttf
+      Lora-BoldItalic.ttf
+      Lora-Italic.ttf
+      Lora-Medium.ttf
+      Lora-MediumItalic.ttf
+      Lora-Regular.ttf
+      Lora-SemiBold.ttf
+      Lora-SemiBoldItalic.ttf
+    images/
+    logos/
   test/
     widget_test.dart
   lib/
@@ -20,9 +36,9 @@ minimal_todo_journal/
       routes.dart
       theme.dart
     core/
-      constraints/
-      storage/
-        local_storage.dart
+      constant/
+      resources/
+        data_state.dart
       utils/
     shared/
       extensions/
@@ -31,11 +47,21 @@ minimal_todo_journal/
       today/
         data/
           data_sources/
+            local/
+              app_database.dart
+              converters/
+                date_time_converter.dart
+              dao/
+                todo_dao.dart
           models/
+            todo_model.dart
           repositories/
+            todo_repository_impl.dart
         domain/
           entities/
+            todo_entity.dart
           repositories/
+            todo_repository.dart
           use_cases/
         presentations/
           controllers/
@@ -92,3 +118,6 @@ minimal_todo_journal/
 Flutter platform folders (`android/`, `ios/`, `linux/`, `macos/`, `web/`,
 `windows/`) mostly contain generated or platform-specific runner files.
 Application logic should usually stay inside `lib/`.
+
+Generated/tooling folders such as `.dart_tool/`, `.git/`, and IDE metadata
+folders are not expanded here.
