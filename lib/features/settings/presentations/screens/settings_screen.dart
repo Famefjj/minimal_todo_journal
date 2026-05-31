@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-class TodayScreen extends StatelessWidget {
-  const TodayScreen({super.key});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -10,7 +11,7 @@ class TodayScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Today', style: Theme.of(context).textTheme.headlineLarge),
+            Text('Settings', style: Theme.of(context).textTheme.headlineLarge),
           ],
         ),
       ),

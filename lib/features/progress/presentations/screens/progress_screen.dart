@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-class TodayScreen extends StatelessWidget {
-  const TodayScreen({super.key});
+class ProgressScreen extends StatelessWidget {
+  const ProgressScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -10,7 +11,10 @@ class TodayScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Today', style: Theme.of(context).textTheme.headlineLarge),
+            Text(
+              'Well Done!',
+              style: Theme.of(context).textTheme.headlineLarge,
+            ),
           ],
         ),
       ),

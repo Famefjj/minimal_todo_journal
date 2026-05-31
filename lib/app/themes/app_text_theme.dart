@@ -5,7 +5,7 @@ class AppTextTheme {
 
   static TextTheme theme(ColorScheme colors) => TextTheme(
     headlineLarge: TextStyle().copyWith(
-      fontSize: 32,
+      fontSize: 36,
       fontWeight: FontWeight.bold,
       color: colors.onSurface,
     ),

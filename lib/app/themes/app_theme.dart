@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:minimal_todo_journal/app/app_button_theme.dart';
-import 'package:minimal_todo_journal/app/app_colors.dart';
-import 'package:minimal_todo_journal/app/app_text_theme.dart';
+import 'package:minimal_todo_journal/app/themes/app_button_theme.dart';
+import 'package:minimal_todo_journal/app/themes/app_colors.dart';
+import 'package:minimal_todo_journal/app/themes/app_text_theme.dart';
 
 class AppTheme {
   const AppTheme._();
@@ -12,7 +12,7 @@ class AppTheme {
       onPrimary: AppColors.softWhite,
       surface: AppColors.softWhite,
       onSurface: AppColors.softBlack,
-      onSurfaceVariant: AppColors.mediumGray,
+      onSurfaceVariant: AppColors.softBlack.withValues(alpha: 0.6),
       outline: AppColors.lightGray,
     );
 
@@ -25,14 +25,14 @@ class AppTheme {
       onPrimary: AppColors.softBlack,
       surface: AppColors.softBlack,
       onSurface: AppColors.softWhite,
-      onSurfaceVariant: AppColors.silverGray,
+      onSurfaceVariant: AppColors.softBlack.withValues(alpha: 0.6),
       outline: AppColors.slateGray,
     );
     return _theme(colorScheme);
   }
 
   static ThemeData _theme(ColorScheme colorScheme) => ThemeData(
-    fontFamily: 'Lora',
+    fontFamily: 'Poppins',
     scaffoldBackgroundColor: colorScheme.surface,
     colorScheme: colorScheme,
     textTheme: AppTextTheme.theme(colorScheme),
