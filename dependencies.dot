@@ -1,0 +1,150 @@
+digraph "" {
+  graph [style=rounded fontname="Arial Black" fontsize=13 penwidth=2.6];
+  node [shape=rect style="filled,rounded" fontname=Arial fontsize=15 fillcolor=Lavender penwidth=1.3];
+  edge [penwidth=1.3];
+  "/lib/app/app.dart" [label="app"];
+  "/lib/app/routes.dart" [label="routes"];
+  "/lib/app/theme.dart" [label="theme"];
+  "/lib/core/resources/data_state.dart" [label="data_state"];
+  "/lib/core/usecase/usecase.dart" [label="usecase"];
+  "/lib/features/today/presentations/screens/today_screen.dart" [label="today_screen"];
+  "/lib/features/todos/data/data_sources/local/app_database.dart" [label="app_database"];
+  "/lib/features/todos/data/data_sources/local/app_database.g.dart" [label="app_database.g"];
+  "/lib/features/todos/data/data_sources/local/converters/date_time_converter.dart" [label="date_time_converter"];
+  "/lib/features/todos/data/data_sources/local/dao/todo_dao.dart" [label="todo_dao"];
+  "/lib/features/todos/data/models/todo_model.dart" [label="todo_model"];
+  "/lib/features/todos/data/repositories/todo_repository_impl.dart" [label="todo_repository_impl"];
+  "/lib/features/todos/domain/entities/todo_entity.dart" [label="todo_entity"];
+  "/lib/features/todos/domain/params/todo_query_params.dart" [label="todo_query_params"];
+  "/lib/features/todos/domain/repositories/todo_repository.dart" [label="todo_repository"];
+  "/lib/features/todos/domain/usecases/delete_todo_usecase.dart" [label="delete_todo_usecase"];
+  "/lib/features/todos/domain/usecases/get_overdue_incompleted_todos_usecase.dart" [label="get_overdue_incompleted_todos_usecase"];
+  "/lib/features/todos/domain/usecases/get_todos_by_date_usecase.dart" [label="get_todos_by_date_usecase"];
+  "/lib/features/todos/domain/usecases/get_todos_usecase.dart" [label="get_todos_usecase"];
+  "/lib/features/todos/domain/usecases/insert_todo_usecase.dart" [label="insert_todo_usecase"];
+  "/lib/main.dart" [label="main"];
+  "/test/widget_test.dart" [label="widget_test"];
+  subgraph "cluster~" {
+    label="minimal_todo_journal";
+    subgraph "cluster~/lib" {
+      label="lib";
+      "/lib/main.dart";
+      subgraph "cluster~/lib/app" {
+        label="app";
+        "/lib/app/app.dart";
+        "/lib/app/routes.dart";
+        "/lib/app/theme.dart";
+      }
+      subgraph "cluster~/lib/core" {
+        label="core";
+        subgraph "cluster~/lib/core/resources" {
+          label="resources";
+          "/lib/core/resources/data_state.dart";
+        }
+        subgraph "cluster~/lib/core/usecase" {
+          label="usecase";
+          "/lib/core/usecase/usecase.dart";
+        }
+      }
+      subgraph "cluster~/lib/features" {
+        label="features";
+        subgraph "cluster~/lib/features/today" {
+          label="today";
+          subgraph "cluster~/lib/features/today/presentations" {
+            label="presentations";
+            subgraph "cluster~/lib/features/today/presentations/screens" {
+              label="screens";
+              "/lib/features/today/presentations/screens/today_screen.dart";
+            }
+          }
+        }
+        subgraph "cluster~/lib/features/todos" {
+          label="todos";
+          subgraph "cluster~/lib/features/todos/data" {
+            label="data";
+            subgraph "cluster~/lib/features/todos/data/data_sources" {
+              label="data_sources";
+              subgraph "cluster~/lib/features/todos/data/data_sources/local" {
+                label="local";
+                "/lib/features/todos/data/data_sources/local/app_database.dart";
+                "/lib/features/todos/data/data_sources/local/app_database.g.dart";
+                subgraph "cluster~/lib/features/todos/data/data_sources/local/converters" {
+                  label="converters";
+                  "/lib/features/todos/data/data_sources/local/converters/date_time_converter.dart";
+                }
+                subgraph "cluster~/lib/features/todos/data/data_sources/local/dao" {
+                  label="dao";
+                  "/lib/features/todos/data/data_sources/local/dao/todo_dao.dart";
+                }
+              }
+            }
+            subgraph "cluster~/lib/features/todos/data/models" {
+              label="models";
+              "/lib/features/todos/data/models/todo_model.dart";
+            }
+            subgraph "cluster~/lib/features/todos/data/repositories" {
+              label="repositories";
+              "/lib/features/todos/data/repositories/todo_repository_impl.dart";
+            }
+          }
+          subgraph "cluster~/lib/features/todos/domain" {
+            label="domain";
+            subgraph "cluster~/lib/features/todos/domain/entities" {
+              label="entities";
+              "/lib/features/todos/domain/entities/todo_entity.dart";
+            }
+            subgraph "cluster~/lib/features/todos/domain/params" {
+              label="params";
+              "/lib/features/todos/domain/params/todo_query_params.dart";
+            }
+            subgraph "cluster~/lib/features/todos/domain/repositories" {
+              label="repositories";
+              "/lib/features/todos/domain/repositories/todo_repository.dart";
+            }
+            subgraph "cluster~/lib/features/todos/domain/usecases" {
+              label="usecases";
+              "/lib/features/todos/domain/usecases/delete_todo_usecase.dart";
+              "/lib/features/todos/domain/usecases/get_overdue_incompleted_todos_usecase.dart";
+              "/lib/features/todos/domain/usecases/get_todos_by_date_usecase.dart";
+              "/lib/features/todos/domain/usecases/get_todos_usecase.dart";
+              "/lib/features/todos/domain/usecases/insert_todo_usecase.dart";
+            }
+          }
+        }
+      }
+    }
+    subgraph "cluster~/test" {
+      label="test";
+      "/test/widget_test.dart";
+    }
+  }
+  "/lib/app/app.dart" -> "/lib/features/today/presentations/screens/today_screen.dart";
+  "/lib/features/todos/data/data_sources/local/app_database.dart" -> "/lib/features/todos/data/data_sources/local/converters/date_time_converter.dart";
+  "/lib/features/todos/data/data_sources/local/app_database.dart" -> "/lib/features/todos/data/data_sources/local/dao/todo_dao.dart";
+  "/lib/features/todos/data/data_sources/local/app_database.dart" -> "/lib/features/todos/data/models/todo_model.dart";
+  "/lib/features/todos/data/data_sources/local/dao/todo_dao.dart" -> "/lib/features/todos/data/models/todo_model.dart";
+  "/lib/features/todos/data/models/todo_model.dart" -> "/lib/features/todos/domain/entities/todo_entity.dart";
+  "/lib/features/todos/data/repositories/todo_repository_impl.dart" -> "/lib/features/todos/data/data_sources/local/app_database.dart";
+  "/lib/features/todos/data/repositories/todo_repository_impl.dart" -> "/lib/features/todos/data/models/todo_model.dart";
+  "/lib/features/todos/data/repositories/todo_repository_impl.dart" -> "/lib/features/todos/domain/entities/todo_entity.dart";
+  "/lib/features/todos/data/repositories/todo_repository_impl.dart" -> "/lib/features/todos/domain/repositories/todo_repository.dart";
+  "/lib/features/todos/domain/repositories/todo_repository.dart" -> "/lib/features/todos/domain/entities/todo_entity.dart";
+  "/lib/features/todos/domain/usecases/delete_todo_usecase.dart" -> "/lib/core/usecase/usecase.dart";
+  "/lib/features/todos/domain/usecases/delete_todo_usecase.dart" -> "/lib/features/todos/domain/entities/todo_entity.dart";
+  "/lib/features/todos/domain/usecases/delete_todo_usecase.dart" -> "/lib/features/todos/domain/repositories/todo_repository.dart";
+  "/lib/features/todos/domain/usecases/get_overdue_incompleted_todos_usecase.dart" -> "/lib/core/usecase/usecase.dart";
+  "/lib/features/todos/domain/usecases/get_overdue_incompleted_todos_usecase.dart" -> "/lib/features/todos/domain/entities/todo_entity.dart";
+  "/lib/features/todos/domain/usecases/get_overdue_incompleted_todos_usecase.dart" -> "/lib/features/todos/domain/repositories/todo_repository.dart";
+  "/lib/features/todos/domain/usecases/get_todos_by_date_usecase.dart" -> "/lib/core/usecase/usecase.dart";
+  "/lib/features/todos/domain/usecases/get_todos_by_date_usecase.dart" -> "/lib/features/todos/domain/entities/todo_entity.dart";
+  "/lib/features/todos/domain/usecases/get_todos_by_date_usecase.dart" -> "/lib/features/todos/domain/repositories/todo_repository.dart";
+  "/lib/features/todos/domain/usecases/get_todos_usecase.dart" -> "/lib/core/usecase/usecase.dart";
+  "/lib/features/todos/domain/usecases/get_todos_usecase.dart" -> "/lib/features/todos/domain/entities/todo_entity.dart";
+  "/lib/features/todos/domain/usecases/get_todos_usecase.dart" -> "/lib/features/todos/domain/repositories/todo_repository.dart";
+  "/lib/features/todos/domain/usecases/insert_todo_usecase.dart" -> "/lib/core/usecase/usecase.dart";
+  "/lib/features/todos/domain/usecases/insert_todo_usecase.dart" -> "/lib/features/todos/domain/entities/todo_entity.dart";
+  "/lib/features/todos/domain/usecases/insert_todo_usecase.dart" -> "/lib/features/todos/domain/repositories/todo_repository.dart";
+  "/lib/main.dart" -> "/lib/app/app.dart";
+  "/test/widget_test.dart" -> "/lib/app/app.dart";
+  "/test/widget_test.dart" -> "/lib/main.dart";
+}

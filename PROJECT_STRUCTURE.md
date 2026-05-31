@@ -33,8 +33,8 @@ minimal_todo_journal/
     main.dart
     app/
       app.dart
+      app_theme.dart
       routes.dart
-      theme.dart
     core/
       constant/
       resources/

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minimal_todo_journal/app/theme.dart';
+import 'package:minimal_todo_journal/app/app_theme.dart';
 import 'package:minimal_todo_journal/features/today/presentations/screens/today_screen.dart';
 
 class App extends StatelessWidget {
@@ -9,6 +9,8 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Minimal Todo Journal',
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
       home: const TodayScreen(),
     );
