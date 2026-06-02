@@ -1,16 +1,17 @@
 # Architecture
 
 This project follows a feature-first Clean Architecture style for a minimal
-todo journal Flutter app. It is based on the ideas from the video
-"Clean Architecture in Flutter - All You Need to Know!" by Flutter Guys, and
-aligned with Flutter's official app architecture guidance: separate UI,
-application/domain logic, and data access so the app stays easy to change.
+todo journal Flutter app. The goal is to keep UI, app/domain rules, and data
+access separate so the app stays small now and easy to extend later.
+
+The app uses Riverpod for presentation state and dependency wiring at the UI
+boundary.
 
 ## Project Goals
 
 - Keep `main.dart` small. It should only start the app.
 - Keep app setup in `lib/app/`.
-- Keep reusable, app-wide utilities in `lib/core/`.
+- Keep reusable, app-wide non-UI utilities in `lib/core/`.
 - Keep reusable UI helpers in `lib/shared/`.
 - Keep user-facing product areas in `lib/features/`.
 - Keep static app assets in top-level `assets/`.
@@ -37,7 +38,9 @@ The Flutter entry point.
 
 Use it for:
 
-- `runApp(const App())`
+- `runApp(...)`
+- wrapping the app with `ProviderScope`
+- one-time Flutter initialization when needed
 
 Do not put screens, themes, routes, storage, or business logic here.
 
@@ -51,15 +54,17 @@ themes, and set up routes.
 
 Use it for:
 
-- `app.dart`: root `MaterialApp`
-- `routes.dart`: route names and route setup
-- `theme.dart`: app theme and visual system
+- `app.dart`: root `MaterialApp.router`
+- `app_shell.dart`: app-wide shell layout, such as tab navigation
+- `router/`: route names and `GoRouter` setup
+- `themes/`: app theme, colors, text theme, and component themes
+- `widgets/`: app-shell widgets, such as the bottom navigation bar
 
 Do not import `app/` files from inside feature code. Features should stay below
 the app shell and should not depend on the root composition layer.
 
-Keep `routes.dart` and `theme.dart` in `app/` unless there is a specific need to
-extract shared constants or theme tokens into a neutral folder.
+Keep app theme and router setup inside `app/` unless there is a specific need to
+extract neutral constants or reusable UI into `core/` or `shared/`.
 
 ### `core/`
 
@@ -67,19 +72,21 @@ App-wide non-UI logic that is not owned by one feature.
 
 Use it for:
 
-- `constant/`: app-wide constants that are not owned by one feature
+- `constants/`: app-wide constants that are not owned by one feature
 - `resources/`: shared result/resource wrappers, such as `data_state.dart`
+- `usecase/`: shared use case base types
 - `utils/`: reusable date, formatting, parsing, and utility helpers
 
-Do not put feature-specific todo or journal logic in `core/`.
+Do not put feature-specific todo, journal, progress, or settings logic in
+`core/`.
 
 Do not use `core/` as a dumping ground for convenience imports. If code belongs
 to one product area, keep it inside that feature.
 
 Keep `core/resources/` independent from transport-specific packages when
-possible. For example, `DataState` may carry an `Object` error, while Dio or
-Retrofit-specific error handling should stay in `data_sources/` or repository
-implementations.
+possible. For example, `DataState` may carry an `Object` error, while Dio,
+Retrofit, Floor, or Sqflite-specific error handling should stay in
+`data_sources/` or repository implementations.
 
 ### `shared/`
 
@@ -102,6 +109,7 @@ Current features:
 - `today`: combined daily screen for today's todos and journal
 - `todos`: todo planning and task behavior
 - `journal`: daily journal entries
+- `progress`: minimal progress/history view
 - `settings`: user preferences
 
 ### `assets/`
@@ -110,12 +118,13 @@ Static app assets live outside `lib/`.
 
 Current asset folders:
 
-- `fonts/`: bundled Lora font files
+- `fonts/Lora/`: bundled Lora font files
+- `fonts/Poppins/`: bundled Poppins font files
 - `images/`: app image assets
 - `logos/`: app logo assets
 
 Register fonts and asset folders in `pubspec.yaml` before using them from the
-app. Theme setup that uses bundled fonts still belongs in `app/theme.dart`.
+app. Theme setup that uses bundled fonts belongs in `app/themes/`.
 
 ## Feature Structure
 
@@ -125,22 +134,25 @@ Each feature may use this structure:
 features/
   feature_name/
     data/
-      models/
       data_sources/
+      models/
       repositories/
     domain/
       entities/
       repositories/
-      use_cases/
+      usecases/
     presentations/
+      providers/
       screens/
       widgets/
-      controllers/
 ```
 
 Note: this repo currently uses `presentations/` plural. Continue using
 `presentations/` for consistency unless a dedicated cleanup renames every
 feature to `presentation/` singular.
+
+Only create folders when they are useful. For example, a simple placeholder
+screen does not need empty `data/`, `domain/`, or `providers/` folders yet.
 
 ## Layer Responsibilities
 
@@ -151,13 +163,14 @@ details.
 
 Use it for:
 
-- `entities/`: clean business objects, such as `todo.dart`
+- `entities/`: clean business objects, such as `todo_entity.dart`
 - `repositories/`: abstract contracts, such as `todo_repository.dart`
-- `use_cases/`: app actions, such as `get_todos_for_date.dart`
+- `usecases/`: app actions, such as `get_todos_by_date_usecase.dart`
 
 Rules:
 
 - Do not import Flutter widgets.
+- Do not import Riverpod.
 - Do not call local storage directly.
 - Do not depend on `data/` or `presentations/`.
 
@@ -186,17 +199,40 @@ Use it for:
 
 - `screens/`: full pages, such as `today_screen.dart`
 - `widgets/`: smaller UI components, such as `todo_tile.dart`
-- `controllers/`: Cubits, Blocs, or simple controllers for screen/feature
-  state, such as `todos_cubit.dart`
+- `providers/`: Riverpod providers, notifiers, and UI state for the feature
 
 Rules:
 
-- Screens compose widgets and listen to Cubits, Blocs, or controllers.
-- Cubits, Blocs, and controllers should call use cases. Direct repository
-  contract access is allowed only for simple pass-through state where no use
-  case exists yet.
+- Screens compose widgets and watch providers.
+- Providers/notifiers should call use cases.
+- Direct repository contract access is allowed only for simple pass-through
+  state where no use case exists yet.
 - Widgets should stay as simple as possible.
 - UI should not know how local storage works.
+
+## Riverpod Placement
+
+Put providers where the state is owned.
+
+Use feature providers for feature-owned state:
+
+```text
+features/todos/presentations/providers/todos_provider.dart
+features/today/presentations/providers/today_provider.dart
+features/progress/presentations/providers/progress_provider.dart
+features/settings/presentations/providers/settings_provider.dart
+```
+
+Use app providers only for app-shell state or app-wide dependencies:
+
+```text
+app/providers/router_provider.dart
+app/providers/theme_mode_provider.dart
+```
+
+Do not put todo providers in `today/` just because `TodayScreen` displays
+todos. Todo state belongs to `todos`; Today may watch todo providers and compose
+the result with journal state.
 
 ## App Shell, Routes, and Theme
 
@@ -206,14 +242,15 @@ The root dependency direction is:
 main.dart -> app -> features
 ```
 
-That means `app/app.dart` may import feature screens for `home`, routes, or
-navigation setup. Feature files should not import `app/app.dart`,
-`app/routes.dart`, or `app/theme.dart`.
+That means `app/app.dart` and `app/router/app_router.dart` may import feature
+screens for routing or navigation setup. Feature files should not import
+`app/app.dart`, `app/app_shell.dart`, `app/router/app_router.dart`, or
+`app/themes/app_theme.dart`.
 
 Theme setup should work like this:
 
 ```text
-app/theme.dart -> defines ThemeData
+app/themes/app_theme.dart -> defines ThemeData
 app/app.dart -> applies ThemeData to MaterialApp
 features/widgets -> read Theme.of(context)
 ```
@@ -225,15 +262,14 @@ final colorScheme = Theme.of(context).colorScheme;
 final textTheme = Theme.of(context).textTheme;
 ```
 
-Do not import `app/theme.dart` from a feature just to access colors, text styles,
-or spacing. If a feature needs reusable design tokens, prefer a neutral location
-such as `core/constant/` for constants or a future `shared/theme/` folder for UI
-theme extensions.
+Do not import `app/themes/app_theme.dart` from a feature just to access colors,
+text styles, or spacing. If a feature needs reusable design tokens, prefer a
+neutral location such as `core/constants/` for constants or a future
+`shared/theme/` folder for reusable UI theme extensions.
 
-Routes follow the same rule. Keep route setup in `app/routes.dart`. If features
-need to trigger navigation, prefer callbacks from the app/screen boundary or use
-neutral route-name constants outside `app/` rather than importing
-`app/routes.dart`.
+Routes follow the same rule. Keep route setup in `app/router/`. If features
+need to trigger navigation, prefer callbacks from the app/screen boundary or
+use route-name constants without depending on app composition classes.
 
 ## Dependency Direction
 
@@ -265,6 +301,7 @@ Avoid:
 - features importing `app/`
 - `domain` importing `data`
 - `domain` importing `presentations`
+- `domain` importing Riverpod
 - widgets importing local storage directly
 - one feature reaching into another feature's data sources
 
@@ -295,20 +332,21 @@ Use it for:
 - todo model
 - todo repository contract and implementation
 - use cases for adding, completing, deleting, and moving todos by date
+- todo providers for todo list state and mutations
 - todo widgets reused by todo-related screens
 
 Example files:
 
 ```text
-features/todos/domain/entities/todo.dart
+features/todos/domain/entities/todo_entity.dart
 features/todos/domain/repositories/todo_repository.dart
-features/todos/domain/use_cases/get_todos_for_date.dart
-features/todos/domain/use_cases/add_todo.dart
-features/todos/domain/use_cases/complete_todo.dart
+features/todos/domain/usecases/get_todos_by_date_usecase.dart
+features/todos/domain/usecases/insert_todo_usecase.dart
+features/todos/domain/usecases/delete_todo_usecase.dart
 features/todos/data/models/todo_model.dart
-features/todos/data/data_sources/todo_local_data_source.dart
+features/todos/data/data_sources/local/dao/todo_dao.dart
 features/todos/data/repositories/todo_repository_impl.dart
-features/todos/presentations/controllers/todos_cubit.dart
+features/todos/presentations/providers/todos_provider.dart
 features/todos/presentations/widgets/todo_tile.dart
 ```
 
@@ -322,20 +360,37 @@ Use it for:
 - journal model
 - journal repository contract and implementation
 - use cases for getting and saving entries by date
+- journal providers for journal state and mutations
 - journal editor widgets
 
 Example files:
 
 ```text
-features/journal/domain/entities/journal_entry.dart
+features/journal/domain/entities/journal_entry_entity.dart
 features/journal/domain/repositories/journal_repository.dart
-features/journal/domain/use_cases/get_journal_entry_for_date.dart
-features/journal/domain/use_cases/save_journal_entry.dart
+features/journal/domain/usecases/get_journal_entry_for_date_usecase.dart
+features/journal/domain/usecases/save_journal_entry_usecase.dart
 features/journal/data/models/journal_entry_model.dart
-features/journal/data/data_sources/journal_local_data_source.dart
+features/journal/data/data_sources/local/journal_local_data_source.dart
 features/journal/data/repositories/journal_repository_impl.dart
+features/journal/presentations/providers/journal_provider.dart
 features/journal/presentations/widgets/journal_editor.dart
 ```
+
+### `progress`
+
+`progress` owns the minimal history/progress view.
+
+Progress may compose data from todos and journal. It only needs its own domain
+entity when it introduces its own meaning, such as a `DailyProgressEntity` with
+completion percent, planned status, journal status, or day status.
+
+Use it for:
+
+- progress screen and widgets
+- progress providers that compose todo/journal data
+- progress-specific entities and use cases only when the rules become real app
+  concepts
 
 ### `settings`
 
@@ -346,50 +401,57 @@ Use it for:
 - theme mode preference if added later
 - notification/reminder preference if added later
 - settings screen and widgets
+- settings providers for preference state
 
 ## Naming Rules
 
 - Use `snake_case` for folders and Dart files.
-- Use singular entity names: `todo.dart`, `journal_entry.dart`.
+- Use singular entity names: `todo_entity.dart`, `journal_entry_entity.dart`.
 - Use `_model` for data models: `todo_model.dart`.
 - Use `_repository` for contracts: `todo_repository.dart`.
 - Use `_repository_impl` for implementations: `todo_repository_impl.dart`.
-- Use action-style use case names: `add_todo.dart`, `get_todos_for_date.dart`.
+- Use action-style use case names: `insert_todo_usecase.dart`,
+  `get_todos_by_date_usecase.dart`.
 - Use screen names ending in `_screen.dart`.
-- Use Cubit names ending in `_cubit.dart`.
-- Use Bloc names ending in `_bloc.dart`, event files ending in `_event.dart`,
-  and state files ending in `_state.dart`.
-- Use simple controller names ending in `_controller.dart` only when Cubit or
-  Bloc would be unnecessary.
+- Use provider files ending in `_provider.dart`.
+- Use notifier classes ending in `Notifier`, such as `TodosNotifier`.
+- Use immutable state classes ending in `State`, such as `TodosState`.
 
 ## State Management
 
-This project uses `flutter_bloc`, `flutter_hooks`, `equatable`, and `get_it`.
+This project uses `flutter_riverpod`, `flutter_hooks`, `equatable`, and
+`get_it`.
 
-Use `flutter_bloc` as the primary state management approach:
+Use Riverpod as the primary state management and dependency wiring approach:
 
-- Prefer `Cubit` for simple screen or feature state.
-- Use `Bloc` when the feature benefits from explicit events.
-- Keep Cubit/Bloc classes in the feature's `presentations/controllers/`
-  folder unless a dedicated structure cleanup renames the folder.
-- Cubits and Blocs should call use cases, not data sources or local storage.
-- UI should use `BlocProvider`, `BlocBuilder`, `BlocListener`, and
-  `BlocConsumer` from `flutter_bloc`.
+- Wrap the app with `ProviderScope` in `main.dart`.
+- Use `ConsumerWidget` or `ConsumerStatefulWidget` for widgets that need
+  provider access.
+- Use `ref.watch` to rebuild UI from provider state.
+- Use `ref.read` for one-time actions, such as button taps.
+- Use `ref.listen` for one-off effects, such as snack bars or navigation
+  reactions.
+- Use `Provider` for stable dependencies and simple computed values.
+- Use `FutureProvider` or `StreamProvider` for read-only async data.
+- Use `NotifierProvider` or `AsyncNotifierProvider` for feature state that has
+  mutations, such as add todo, toggle todo, save journal, or change settings.
+- Keep feature providers in the feature's `presentations/providers/` folder.
+- Providers and notifiers should call use cases, not data sources or local
+  storage.
 
-Use `equatable` for Bloc events, Bloc states, Cubit states, and value objects
-that need stable equality.
+Use `equatable` for state/value classes that need stable equality. Riverpod
+does not require Equatable, but immutable value equality is still useful.
 
 Use `flutter_hooks` only for widget-local lifecycle state, such as text editing
 controllers, focus nodes, animation controllers, or small local UI toggles. Do
-not use hooks as a replacement for feature state that belongs in Cubit or Bloc.
+not use hooks as a replacement for feature state that belongs in Riverpod.
 
-Use `get_it` for dependency registration and lookup at the app composition
-boundary. Prefer providing Cubits/Blocs with `BlocProvider` from dependencies
-registered in `get_it`. Avoid calling `get_it` directly from widgets when a
-dependency can be passed in or provided above the widget.
+Use `get_it` only for existing app-level service registration when needed.
+Prefer Riverpod providers for new dependency wiring so widgets can override
+dependencies cleanly in tests.
 
-Do not add another state management package, such as Riverpod, Provider, GetX,
-or MobX, unless the task explicitly requires changing the architecture.
+Do not add another state management package, such as Bloc, Provider, GetX, or
+MobX, unless the task explicitly requires changing the architecture.
 
 ## Storage
 
@@ -402,7 +464,7 @@ journal entries unless a feature explicitly needs sync or remote data.
 Allowed flow:
 
 ```text
-screen/controller -> use case -> repository contract -> repository impl -> data source -> Floor database
+screen/widget -> provider/notifier -> use case -> repository contract -> repository impl -> data source -> Floor database
 ```
 
 Avoid:
@@ -423,17 +485,19 @@ Prefer:
 
 - unit tests for use cases
 - unit tests for repository implementations with fake data sources
-- Cubit, Bloc, or controller tests for UI state logic
-- widget tests for screens and reusable widgets
+- provider/notifier tests for UI state logic
+- widget tests with `ProviderScope` overrides for screens and reusable widgets
 
 ## Codex Working Rules
 
 When editing this project:
 
-1. Read `PROJECT_STRUCTURE.md` before creating or moving files.
+1. Read `PROJECT_STRUCTURE.md`, `ARCHITECTURE.md`, `PACKAGES.md`, and
+   `pubspec.yaml` before writing code.
 2. Follow the existing folder style unless the task is a structure cleanup.
 3. Keep code inside the smallest feature that owns the behavior.
 4. Do not move logic into `core/` just because it is convenient.
 5. Do not duplicate todo or journal business logic inside `today/`.
-6. Update `PROJECT_STRUCTURE.md` whenever files or folders are added, deleted,
+6. Put Riverpod providers in the feature that owns the state.
+7. Update `PROJECT_STRUCTURE.md` whenever files or folders are added, deleted,
    moved, or renamed.

@@ -96,7 +96,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `todo` (`id` TEXT, `title` TEXT NOT NULL, `isCompleted` INTEGER NOT NULL, `startDateTime` INTEGER NOT NULL, `dueDateTime` INTEGER, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `todo` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `isCompleted` INTEGER NOT NULL, `startDateTime` INTEGER NOT NULL, `dueDateTime` INTEGER, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -118,6 +118,19 @@ class _$TodoDao extends TodoDao {
         _todoModelInsertionAdapter = InsertionAdapter(
             database,
             'todo',
+            (TodoModel item) => <String, Object?>{
+                  'id': item.id,
+                  'title': item.title,
+                  'isCompleted': item.isCompleted ? 1 : 0,
+                  'startDateTime':
+                      _dateTimeConverter.encode(item.startDateTime),
+                  'dueDateTime':
+                      _nullableDateTimeConverter.encode(item.dueDateTime)
+                }),
+        _todoModelUpdateAdapter = UpdateAdapter(
+            database,
+            'todo',
+            ['id'],
             (TodoModel item) => <String, Object?>{
                   'id': item.id,
                   'title': item.title,
@@ -149,14 +162,21 @@ class _$TodoDao extends TodoDao {
 
   final InsertionAdapter<TodoModel> _todoModelInsertionAdapter;
 
+  final UpdateAdapter<TodoModel> _todoModelUpdateAdapter;
+
   final DeletionAdapter<TodoModel> _todoModelDeletionAdapter;
+
+  @override
+  Future<void> deleteTodosWithNullId() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM todo WHERE id IS NULL');
+  }
 
   @override
   Future<List<TodoModel>> getTodos() async {
     return _queryAdapter.queryList(
         'SELECT * FROM todo ORDER BY startDateTime ASC',
         mapper: (Map<String, Object?> row) => TodoModel(
-            id: row['id'] as String?,
+            id: row['id'] as String,
             title: row['title'] as String,
             isCompleted: (row['isCompleted'] as int) != 0,
             startDateTime:
@@ -172,7 +192,7 @@ class _$TodoDao extends TodoDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM todo WHERE startDateTime >= ?1 AND startDateTime < ?2 ORDER BY startDateTime ASC',
-        mapper: (Map<String, Object?> row) => TodoModel(id: row['id'] as String?, title: row['title'] as String, isCompleted: (row['isCompleted'] as int) != 0, startDateTime: _dateTimeConverter.decode(row['startDateTime'] as int), dueDateTime: _nullableDateTimeConverter.decode(row['dueDateTime'] as int?)),
+        mapper: (Map<String, Object?> row) => TodoModel(id: row['id'] as String, title: row['title'] as String, isCompleted: (row['isCompleted'] as int) != 0, startDateTime: _dateTimeConverter.decode(row['startDateTime'] as int), dueDateTime: _nullableDateTimeConverter.decode(row['dueDateTime'] as int?)),
         arguments: [
           _dateTimeConverter.encode(dateStart),
           _dateTimeConverter.encode(dateEnd)
@@ -188,7 +208,7 @@ class _$TodoDao extends TodoDao {
     return _queryAdapter.queryList(
         'SELECT * FROM todo WHERE startDateTime >= ?1 AND startDateTime < ?2 AND isCompleted = ?3 ORDER BY startDateTime ASC',
         mapper: (Map<String, Object?> row) => TodoModel(
-            id: row['id'] as String?,
+            id: row['id'] as String,
             title: row['title'] as String,
             isCompleted: (row['isCompleted'] as int) != 0,
             startDateTime:
@@ -206,13 +226,18 @@ class _$TodoDao extends TodoDao {
   Future<List<TodoModel>> getOverdueIncompleteTodos(DateTime today) async {
     return _queryAdapter.queryList(
         'SELECT * FROM todo WHERE isCompleted = 0 AND COALESCE(dueDateTime, startDateTime) < ?1 ORDER BY startDateTime ASC',
-        mapper: (Map<String, Object?> row) => TodoModel(id: row['id'] as String?, title: row['title'] as String, isCompleted: (row['isCompleted'] as int) != 0, startDateTime: _dateTimeConverter.decode(row['startDateTime'] as int), dueDateTime: _nullableDateTimeConverter.decode(row['dueDateTime'] as int?)),
+        mapper: (Map<String, Object?> row) => TodoModel(id: row['id'] as String, title: row['title'] as String, isCompleted: (row['isCompleted'] as int) != 0, startDateTime: _dateTimeConverter.decode(row['startDateTime'] as int), dueDateTime: _nullableDateTimeConverter.decode(row['dueDateTime'] as int?)),
         arguments: [_dateTimeConverter.encode(today)]);
   }
 
   @override
-  Future<void> insertTodo(TodoModel todo) async {
+  Future<void> createTodo(TodoModel todo) async {
     await _todoModelInsertionAdapter.insert(todo, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updateTodo(TodoModel todo) async {
+    await _todoModelUpdateAdapter.update(todo, OnConflictStrategy.abort);
   }
 
   @override

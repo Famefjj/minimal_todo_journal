@@ -15,18 +15,18 @@ class AppTextTheme {
       color: colors.onSurface,
     ),
     headlineSmall: TextStyle().copyWith(
-      fontSize: 18,
+      fontSize: 20,
       fontWeight: FontWeight.w600,
       color: colors.onSurface,
     ),
 
     titleLarge: TextStyle().copyWith(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
+      fontSize: 20,
+      fontWeight: FontWeight.w500,
       color: colors.onSurface,
     ),
     titleMedium: TextStyle().copyWith(
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: FontWeight.w500,
       color: colors.onSurface,
     ),

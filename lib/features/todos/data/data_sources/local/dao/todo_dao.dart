@@ -3,11 +3,17 @@ import 'package:minimal_todo_journal/features/todos/data/models/todo_model.dart'
 
 @dao
 abstract class TodoDao {
+  @update
+  Future<void> updateTodo(TodoModel todo);
+
   @Insert()
-  Future<void> insertTodo(TodoModel todo);
+  Future<void> createTodo(TodoModel todo);
 
   @delete
   Future<void> deleteTodo(TodoModel todo);
+
+  @Query('DELETE FROM todo WHERE id IS NULL')
+  Future<void> deleteTodosWithNullId();
 
   @Query('SELECT * FROM todo ORDER BY startDateTime ASC')
   Future<List<TodoModel>> getTodos();

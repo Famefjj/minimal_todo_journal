@@ -4,7 +4,7 @@ import 'package:minimal_todo_journal/features/todos/domain/entities/todo_entity.
 @Entity(tableName: 'todo', primaryKeys: ['id'])
 class TodoModel extends TodoEntity {
   const TodoModel({
-    super.id,
+    required super.id,
     required super.title,
     super.isCompleted,
     required super.startDateTime,
@@ -19,7 +19,7 @@ class TodoModel extends TodoEntity {
     }
 
     return TodoModel(
-      id: map["id"]?.toString(),
+      id: map["id"].toString(),
       title: map["title"] ?? "",
       isCompleted: map["is_completed"] as bool? ?? false,
       startDateTime: DateTime.parse(startDateTimeValue),

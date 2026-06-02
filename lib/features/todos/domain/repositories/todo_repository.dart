@@ -14,6 +14,9 @@ abstract class TodoRepository {
 
   Future<List<TodoEntity>> getOverdueIncompleteTodos(DateTime today);
 
-  Future<void> insertTodo(TodoEntity todo);
+  Future<void> addTodo(TodoEntity todo);
+  Future<void> updateTodo(TodoEntity todo);
   Future<void> deleteTodo(TodoEntity todo);
+
+  Future<void> deleteTodosWithNullId();
 }

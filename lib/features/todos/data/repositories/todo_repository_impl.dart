@@ -9,13 +9,23 @@ class TodoRepositoryImpl implements TodoRepository {
   TodoRepositoryImpl(this._appDatabase);
 
   @override
+  Future<void> deleteTodosWithNullId() {
+    return _appDatabase.todoDao.deleteTodosWithNullId();
+  }
+
+  @override
   Future<void> deleteTodo(TodoEntity todo) {
     return _appDatabase.todoDao.deleteTodo(TodoModel.fromEntity(todo));
   }
 
   @override
-  Future<void> insertTodo(TodoEntity todo) {
-    return _appDatabase.todoDao.insertTodo(TodoModel.fromEntity(todo));
+  Future<void> addTodo(TodoEntity todo) {
+    return _appDatabase.todoDao.createTodo(TodoModel.fromEntity(todo));
+  }
+
+  @override
+  Future<void> updateTodo(TodoEntity todo) {
+    return _appDatabase.todoDao.updateTodo(TodoModel.fromEntity(todo));
   }
 
   @override
